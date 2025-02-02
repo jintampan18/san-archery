@@ -80,6 +80,16 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
 
   const filteredCosts = filterOutServices(costs, servicesToExclude);
 
+  // Ensure that selectedCity and selectedProvince are valid before accessing their properties
+  const selectedCityName =
+    cities.find((city) => city.city_id === selectedCity)?.city_name || "";
+  const selectedProvinceName =
+    provinces.find((province) => province.province_id === selectedProvince)
+      ?.province || "";
+
+  // Construct the address string
+  const address2 = `${address}, ${selectedCityName}, ${selectedProvinceName}`;
+
   // Calculate shipping cost
   const calculateCost = async () => {
     if (!selectedProvince || !selectedCity || !selectedCourier) {
@@ -113,7 +123,13 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
         setError("Failed to calculate shipping cost.");
       }
     } else {
-      onCostCalculated({ cost: shippingCost });
+      console.log("address", address2);
+
+      onCostCalculated({
+        cost: shippingCost,
+        address: address2,
+        courier: "ambil_di_toko",
+      });
       setCosts([]);
     }
   };
@@ -124,15 +140,17 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
       .flatMap((item) => item.costs)
       .find((service) => service.service === selectedServiceCode);
 
-    // Ensure that selectedCity and selectedProvince are valid before accessing their properties
-    const selectedCityName =
-      cities.find((city) => city.city_id === selectedCity)?.city_name || "";
-    const selectedProvinceName =
-      provinces.find((province) => province.province_id === selectedProvince)
-        ?.province || "";
+    // // Ensure that selectedCity and selectedProvince are valid before accessing their properties
+    // const selectedCityName =
+    //   cities.find((city) => city.city_id === selectedCity)?.city_name || "";
+    // const selectedProvinceName =
+    //   provinces.find((province) => province.province_id === selectedProvince)
+    //     ?.province || "";
 
-    // Construct the address string
-    const address2 = `${address}, ${selectedCityName}, ${selectedProvinceName}`;
+    // // Construct the address string
+    // const address2 = `${address}, ${selectedCityName}, ${selectedProvinceName}`;
+
+    console.log(address2);
 
     // Call the onCostCalculated function with the selected service and address
     onCostCalculated({
