@@ -79,28 +79,13 @@ export async function createComment(comment) {
     }
 }
 
-// export async function getAllCustomer() {
-//     try {
-//         const customers = await databases.listDocuments(
-//             appwriteConfig.databaseId,
-//             appwriteConfig.customerCollectionId,
-//             [Query.orderAsc('$createdAt')]
-//         );
-//         if (!customers) throw Error;
-
-//         return customers;
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
-
 export async function getAllCustomer() {
     try {
         const customers = await databases.listDocuments(
             appwriteConfig.databaseId,
             appwriteConfig.customerCollectionId,
             [
-                Query.orderAsc('$createdAt') // Order by createdAt
+                Query.orderDesc('$createdAt') // Order by createdAt
             ]
         );
 
@@ -205,7 +190,7 @@ export async function createProduct(product) {
                 stock: product.stock,
                 weight: product.weight, // Menyimpan weight ke database
                 imageUrl: fileUrl,
-                status: 'active' // Tambahkan status produk
+                status: 'pending' // Tambahkan status produk
             }
         );
 
@@ -249,13 +234,42 @@ export async function updateProduct(product) {
                 discountPrice: product.discountPrice, // Pastikan harga diskon disertakan
                 stock: product.stock,
                 weight: product.weight,
-                imageUrl: product.imageUrl // Misalnya, jika Anda menyimpan URL gambar
+                imageUrl: product.imageUrl, // Misalnya, jika Anda menyimpan URL gambar
+                status: "pending" 
             }
         );
         return updatedProduct;
     } catch (error) {
         console.log(error);
         throw error; // Tambahkan throw error untuk menangani error di tempat lain
+    }
+}
+
+export async function updateProductStatus(product) {
+
+    console.log("Product", product);
+    
+    try {
+        // Prepare the data to update
+        const updatedData = {
+            status: product.status, // Assuming product.status is the new status
+        };
+
+        console.log("Updated Data", updatedData);
+        
+        const updatedProductStatus = await databases.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.productId,
+            product.id,
+            {
+                status: product.status 
+            }
+        );
+
+        return updatedProductStatus; // Return the updated product data
+    } catch (error) {
+        console.error("Error updating status product:", error);
+        throw error; // Rethrow the error for further handling
     }
 }
 

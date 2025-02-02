@@ -97,11 +97,11 @@ const ManagerDashboard = () => {
         setUser(userData);
       } else {
         // Redirect to login if no session
-        navigate("/admin/sign-in");
+        navigate("/manager/sign-in");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      navigate("/admin/sign-in");
+      navigate("/manager/sign-in");
     }
   };
 
@@ -113,7 +113,7 @@ const ManagerDashboard = () => {
 
       sessionStorage.clear();
 
-      navigate("/admin/sign-in");
+      navigate("/manager/sign-in");
     } catch (error) {
       console.error("Sign out error:", error);
     }

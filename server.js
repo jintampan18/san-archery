@@ -50,13 +50,15 @@ app.get('/payment-status/:orderId', async (req, res) => {
 // ================================
 app.post('/create-transaction', async (req, res) => {
     try {
-        const { customerData, cartItems, shippingCost, totalAmount } = req.body;
+        const { customerData, cartItems, shippingCost, shippingOption, totalAmount, address } = req.body;
 
         console.log("📦 Received customerData:", customerData);
         console.log("🛍️ Received cartItems:", cartItems);
-        console.log("Received Shipping Cost", shippingCost);
+        console.log("🚚 Shipping Cost:", shippingCost);
         console.log("💵 Total Amount:", totalAmount);
-
+        console.log("🏠 Address:", address);
+        console.log("🚚 Shipping Option:", shippingOption);
+        
         if (!customerData || !cartItems || cartItems.length === 0) {
             console.error("Missing customerData or cartItems");
             return res.status(400).json({ error: "Invalid request data" });
@@ -70,19 +72,6 @@ app.post('/create-transaction', async (req, res) => {
 
         let order_id = `order-${Date.now()}`;
 
-        // let totalItemAmount = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-        // let shippingCost = customerData.shippingOption === 'regular' 
-        //     ? 15000 
-        //     : customerData.shippingOption === 'ambil_di_tempat' 
-        //     ? 0 
-        //     : 25000;
-        // let totalAmount = totalItemAmount + shippingCost;
-
-        // console.log("📦 Total Item Amount:", totalItemAmount);
-        // console.log("🚚 Shipping Cost:", shippingCost);
-        // console.log("💵 Total Amount:", totalAmount);
-
-
         let itemDetails = cartItems.map(item => ({
             id: item.product,
             price: item.price,
@@ -95,19 +84,19 @@ app.post('/create-transaction', async (req, res) => {
             id: 'shipping',
             price: shippingCost,
             quantity: 1,
-            name: `Shipping (${customerData.shippingOption})`
+            name: `Shipping (${shippingOption})`
         });
 
         let parameter = {
             transaction_details: {
                 order_id: `order-${Date.now()}`,
-                gross_amount: totalAmount // Gunakan total yang sudah dihitung
+                gross_amount: totalAmount 
             },
             customer_details: {
                 first_name: customerData.name,
                 email: customerData.email,
                 phone: customerData.phoneNumber,
-                address: customerData.address,
+                address: address,
             },
             item_details: itemDetails
         };
@@ -118,7 +107,7 @@ app.post('/create-transaction', async (req, res) => {
         console.log("✅ Transaction created successfully:", transaction);
 
         // ✅ Panggil `saveOrder()` sebelum mengirim respons
-        await saveOrder(customerData, cartItems, totalAmount, order_id);
+        await saveOrder(customerData, cartItems, totalAmount, address, shippingCost, shippingOption, order_id);
 
         // ✅ Kirim respons setelah data tersimpan
         res.json({ token: transaction.token, param: parameter });
@@ -159,7 +148,7 @@ app.post('/midtrans-notification', async (req, res) => {
 // ================================
 // Fungsi untuk menyimpan data ke Appwrite
 // ================================
-async function saveOrder(customerData, cartItems, totalAmount, transaction_id) {
+async function saveOrder(customerData, cartItems, totalAmount, address, shippingCost, shippingOption, transaction_id) {
     try {
         console.log('Saving order with customerData:', customerData);
         console.log('Saving order with cartItems:', cartItems);
@@ -175,11 +164,13 @@ async function saveOrder(customerData, cartItems, totalAmount, transaction_id) {
                 name: customerData.name,
                 email: customerData.email,
                 phoneNumber: customerData.phoneNumber,
-                address: customerData.address,
-                shippingOption: customerData.shippingOption,
+                address: address,
+                shippingOption: shippingOption,
                 transaction_id: transaction_id,
-                hasPaid: false,  // Tambahkan default status pembayaran
-                totalAmount: totalAmount
+                hasPaid: false,
+                shippingCost: shippingCost,
+                totalAmount: totalAmount,
+                tanggalTransaksi: new Date().toISOString()
             },
             { 
                 'X-Appwrite-Key': process.env.VITE_SECRET_KEY  // ✅ API Key digunakan di headers

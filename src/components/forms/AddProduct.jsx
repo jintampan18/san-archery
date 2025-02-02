@@ -18,7 +18,6 @@ import {
 } from "@/appwrite/queriesAndMutation";
 import { useNavigate } from "react-router-dom";
 import FileUploader from "../shared/FileUploader.jsx";
-import { AiFillPicture } from "react-icons/ai";
 import { toast } from "../ui/use-toast.js";
 
 const formSchema = z.object({
@@ -72,7 +71,7 @@ export function FormProduct({ product, action }) {
       discountPrice: product ? product.discountPrice : "",
       stock: product ? product.stock : "", // Pastikan default value untuk stock ada di sini
       weight: product ? product.weight : "",
-      status: product ? product.status : "active",
+      status: product ? product.status : "pending",
     },
   });
 

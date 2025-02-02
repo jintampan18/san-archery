@@ -18,8 +18,6 @@ const NavBar = ({ setSearchTerm, searchTerm }) => {
     name: "",
     email: "",
     phoneNumber: "",
-    address: "",
-    shippingOption: "regular",
   });
   const [ongkir, setShippingCost] = useState(null);
 
@@ -157,13 +155,13 @@ const NavBar = ({ setSearchTerm, searchTerm }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const selectedService = ongkir; // Define selectedService using the ongkir state
+    const selectedService = ongkir;
 
     if (
       !customerData.name ||
       !customerData.email ||
       !customerData.phoneNumber ||
-      !customerData.address
+      !selectedService
     ) {
       alert("Please fill in all customer details.");
       return;
@@ -171,25 +169,16 @@ const NavBar = ({ setSearchTerm, searchTerm }) => {
 
     // Assuming selectedService is the service object selected from ShippingCostCalculator
     const shippingCost =
-      selectedService && selectedService.cost && selectedService.cost.length > 0
-        ? selectedService.cost[0].value
-        : 0; // Get the cost from selectedService or default to 0
+      selectedService &&
+      selectedService.service &&
+      selectedService.service.cost &&
+      selectedService.service.cost.length > 0
+        ? selectedService.service.cost[0].value
+        : 0;
 
-    // // Assuming selectedService is the service object selected from ShippingCostCalculator
-    // const selectedServiceCost = ongkir
-    //   ? ongkir.cost[0].value // Get the cost from the selected service
-    //   : 0; // Default to 0 if no service is selected
+    const address = selectedService.address;
 
-    // console.log("Selected service cost:", selectedServiceCost);
-
-    // let shippingCost =
-    //   customerData.shippingOption === "regular"
-    //     ? 15000
-    //     : customerData.shippingOption === "ambil_di_tempat"
-    //     ? 0
-    //     : 25000;
-
-    console.log("Shipping cost:", shippingCost);
+    const shippingOption = selectedService.courier;
 
     // Menghitung total keseluruhan
     const cartItems = ordered.map((item) => {
@@ -203,24 +192,17 @@ const NavBar = ({ setSearchTerm, searchTerm }) => {
       };
     });
 
-    const totalAmountSebelumnya = cartItems.reduce(
-      (total, item) => total + item.totalPrice,
-      0
-    );
-
-    console.log("Total amount sebelumnya:", totalAmountSebelumnya);
-
     const totalAmount =
       cartItems.reduce((total, item) => total + item.totalPrice, 0) +
       shippingCost;
-
-    console.log("Total amount:", totalAmount);
 
     const orderPayload = {
       customerData,
       cartItems,
       totalAmount,
       shippingCost,
+      shippingOption,
+      address,
     };
 
     console.log("Order payload:", orderPayload);
@@ -290,7 +272,7 @@ const NavBar = ({ setSearchTerm, searchTerm }) => {
   const handleCostCalculated = (cost) => {
     console.log("Shipping cost calculated:", cost);
 
-    setShippingCost(cost); // Simpan biaya pengiriman yang dihitung
+    setShippingCost(cost);
   };
 
   const scrollToSection = (sectionId) => {
@@ -465,9 +447,9 @@ const NavBar = ({ setSearchTerm, searchTerm }) => {
                   );
                 })}
                 <div className="mt-4">
-                  <h3 className="text-center font-bold">
+                  {/* <h3 className="text-center font-bold">
                     Total Weight: {totalBerat} Gram
-                  </h3>
+                  </h3> */}
                   <h3 className="text-center font-bold">
                     Total Price: {rupiah(totalHarga)}
                   </h3>
@@ -499,38 +481,20 @@ const NavBar = ({ setSearchTerm, searchTerm }) => {
                       value={customerData.phoneNumber}
                       onChange={handleInputChange}
                     />
-                    <input
+                    {/* <input
                       type="text"
                       name="address"
                       placeholder="Address"
                       className="border p-2"
                       value={customerData.address}
                       onChange={handleInputChange}
+                    /> */}
+
+                    <ShippingCostCalculator
+                      onCostCalculated={handleCostCalculated}
+                      totalWeight={totalBerat}
                     />
 
-                    {/* <label className="flex flex-col">
-                      Pilih opsi pengiriman
-                      <select
-                        name="shippingOption"
-                        className=" mt-3"
-                        value={customerData.shippingOption}
-                        onChange={handleInputChange}
-                      >
-                        <option value="regular">Regular</option>
-                        <option value="prioritas">Prioritas</option>
-                        <option value="ambil_di_tempat">
-                          Ambil di Toko
-                        </option>{" "}
-                      </select>
-                    </label> */}
-
-                    <label className="flex flex-col mt-2">
-                      Pilih biaya pengiriman
-                      <ShippingCostCalculator
-                        onCostCalculated={handleCostCalculated}
-                        totalWeight={totalBerat}
-                      />
-                    </label>
                     <button
                       type="submit"
                       className="bg-blue-500 text-white p-2 mt-2"

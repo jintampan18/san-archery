@@ -1,4 +1,4 @@
-import DashBoard from "@/components/admin/DashBoard Old";
+import DashBoard from "@/components/admin/DashBoard";
 import OrderById from "@/components/admin/OrderById";
 import TopBar from "@/components/admin/TopBar";
 import React from "react";

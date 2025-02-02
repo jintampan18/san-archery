@@ -6,8 +6,9 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedCourier, setSelectedCourier] = useState("");
-  const [costs, setCosts] = useState([]); // Initialize as an empty array
-  const [selectedService, setSelectedService] = useState(null); // New state for selected service
+  const [costs, setCosts] = useState([]);
+  const [address, setAddresses] = useState("");
+  const [selectedService, setSelectedService] = useState(null);
   const [error, setError] = useState("");
 
   // Fetch provinces
@@ -44,8 +45,8 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
   const handleProvinceChange = (e) => {
     const provinceId = e.target.value;
     setSelectedProvince(provinceId);
-    setCities([]); // Reset cities when province changes
-    setSelectedCity(""); // Reset selected city
+    setCities([]);
+    setSelectedCity("");
     if (provinceId) {
       fetchCities(provinceId);
     }
@@ -61,36 +62,11 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
     setSelectedCourier(e.target.value);
   };
 
-  // Calculate shipping cost
-  // const calculateCost = async () => {
-  //   if (!selectedProvince || !selectedCity || !selectedCourier) {
-  //     setError("Please select both province, city, and courier.");
-  //     return;
-  //   }
+  // Handle address input change
+  const handleAddressChange = (event) => {
+    setAddresses(event.target.value);
+  };
 
-  //   try {
-  //     const response = await fetch(`http://localhost:5001/api/cost`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         origin: 1, // Ganti dengan ID kota asal
-  //         destination: selectedCity,
-  //         weight: 1000, // Ganti dengan berat barang dalam gram
-  //         courier: selectedCourier, // Ganti dengan kurir yang diinginkan
-  //       }),
-  //     });
-  //     const data = await response.json();
-
-  //     setCosts(data.rajaongkir.results);
-  //     onCostCalculated(data.rajaongkir.results); // Kirim biaya ke komponen induk
-  //     setError(""); // Clear any previous errors
-  //   } catch (err) {
-  //     console.error("Error calculating cost:", err);
-  //     setError("Failed to calculate shipping cost.");
-  //   }
-  // };
   // Calculate shipping cost
   const calculateCost = async () => {
     if (!selectedProvince || !selectedCity || !selectedCourier) {
@@ -98,7 +74,6 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
       return;
     }
 
-    // Set shipping cost to 0 if 'ambil_di_toko' is selected
     let shippingCost = selectedCourier === "ambil_di_toko" ? 0 : null;
 
     if (shippingCost === null) {
@@ -111,39 +86,47 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            origin: 115, // Replace with the actual origin city ID
+            origin: 115,
             destination: selectedCity,
-            weight: totalWeight, // Replace with the actual weight in grams
+            weight: totalWeight,
             courier: selectedCourier,
           }),
         });
         const data = await response.json();
         setCosts(data.rajaongkir.results);
-        setError(""); // Clear any previous errors
+        setError("");
       } catch (err) {
         console.error("Error calculating cost:", err);
         setError("Failed to calculate shipping cost.");
       }
     } else {
-      // If shippingCost is 0, directly call onCostCalculated
       onCostCalculated({ cost: shippingCost });
-      setCosts([]); // Clear the costs array
+      setCosts([]);
     }
   };
 
   const handleServiceSelect = (e) => {
-    const selectedServiceCode = e.target.value; // Get the selected service code
+    const selectedServiceCode = e.target.value;
     const selectedService = costs
-      .flatMap((item) => item.costs) // Flatten the costs array to get all services
-      .find((service) => service.service === selectedServiceCode); // Find the selected service
+      .flatMap((item) => item.costs)
+      .find((service) => service.service === selectedServiceCode);
 
-    if (selectedService) {
-      // console.log("Shipping cost calculated:", selectedService); // Log the selected service details
-      setSelectedService(selectedService); // Update the selected service state
-      onCostCalculated(selectedService); // Send the selected service to the parent component
-    } else {
-      console.error("Selected service not found."); // Log an error if the service is not found
-    }
+    // Ensure that selectedCity and selectedProvince are valid before accessing their properties
+    const selectedCityName =
+      cities.find((city) => city.city_id === selectedCity)?.city_name || "";
+    const selectedProvinceName =
+      provinces.find((province) => province.province_id === selectedProvince)
+        ?.province || "";
+
+    // Construct the address string
+    const address2 = `${address}, ${selectedCityName}, ${selectedProvinceName}`;
+
+    // Call the onCostCalculated function with the selected service and address
+    onCostCalculated({
+      service: selectedService,
+      address: address2,
+      courier: selectedCourier,
+    });
   };
 
   return (
@@ -178,6 +161,17 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
         ))}
       </select>
 
+      {/* Address */}
+      <input
+        type="text"
+        name="address"
+        placeholder="Address"
+        className="border p-2"
+        value={address}
+        onChange={handleAddressChange}
+        required
+      />
+
       {/* Courier */}
       <select
         id="courier"
@@ -193,74 +187,43 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
       </select>
 
       <button
-        type="button" // Ubah menjadi type="button"
+        type="button"
         className="bg-blue-500 text-white p-2"
-        onClick={calculateCost} // Panggil fungsi calculateCost saat tombol ditekan
+        onClick={calculateCost}
       >
         Hitung Biaya Pengiriman
       </button>
 
-      {/* {costs &&
-        costs.length > 0 && ( // Check if costs is not null and has length
-          <div className="w-full mx-auto bg-white rounded-lg shadow-lg p-6 space-y-4">
-            <h3 className="text-2xl font-bold text-gray-800">
-              Biaya Pengiriman:
-            </h3>
-            {costs.flatMap((item) =>
-              item.costs.map((service) => (
-                <div key={service.service} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={service.service}
-                    name="shippingService" // Grouping name for radio buttons
-                    value={service.service} // Value to identify the service
-                    checked={selectedService?.service === service.service} // Check if this service is selected
-                    onChange={handleServiceSelect} // Handle selection change
-                    className="mr-2"
-                  />
-                  <label htmlFor={service.service}>
-                    {service.description} - Rp{" "}
-                    {service.cost[0].value.toLocaleString()} - Estimasi:{" "}
-                    {service.cost[0].etd} hari
-                  </label>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-         */}
-
-      {costs &&
-        costs.length > 0 && ( // Check if costs is not null and has length
-          <div className="w-full mx-auto bg-white rounded-lg shadow-lg p-6 space-y-4">
-            <h3 className="text-2xl font-bold text-gray-800">
-              Biaya Pengiriman:
-            </h3>
-            {costs.flatMap((item) =>
-              item.costs.map((service) => (
-                <div key={service.service} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={service.service}
-                    name="shippingService" // Grouping name for radio buttons
-                    value={service.service} // Value to identify the service
-                    checked={selectedService?.service === service.service} // Check if this service is selected
-                    onChange={handleServiceSelect} // Handle selection change
-                    className="mr-2"
-                  />
-                  <label htmlFor={service.service}>
-                    {service.description} - Rp{" "}
-                    {service.cost[0].value.toLocaleString()} - Estimasi:{" "}
-                    {service.cost[0].etd} hari
-                  </label>
-                </div>
-              ))
-            )}
-            {selectedService && selectedService.cost[0].value === 0 && (
-              <p className="text-green-500">Biaya Pengiriman = 0</p>
-            )}
-          </div>
-        )}
+      {costs && costs.length > 0 && (
+        <div className="w-full mx-auto bg-white rounded-lg shadow-lg p-6 space-y-4">
+          <h3 className="text-2xl font-bold text-gray-800">
+            Biaya Pengiriman:
+          </h3>
+          {costs.flatMap((item) =>
+            item.costs.map((service) => (
+              <div key={service.service} className="flex items-center">
+                <input
+                  type="radio"
+                  id={service.service}
+                  name="shippingService"
+                  value={service.service}
+                  checked={selectedService?.service === service.service}
+                  onChange={handleServiceSelect}
+                  className="mr-2"
+                />
+                <label htmlFor={service.service}>
+                  {service.description} - Rp{" "}
+                  {service.cost[0].value.toLocaleString()} - Estimasi:{" "}
+                  {service.cost[0].etd} hari
+                </label>
+              </div>
+            ))
+          )}
+          {selectedService && selectedService.cost[0].value === 0 && (
+            <p className="text-green-500">Biaya Pengiriman = 0</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

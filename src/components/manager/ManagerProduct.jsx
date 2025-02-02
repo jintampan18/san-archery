@@ -5,10 +5,9 @@ import {
 import rupiah from "@/utils/rupiahFormater";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Loader from "../ui/Loader";
 import { account } from "../../appwrite/config";
 
-const ProductAdmin = () => {
+const ManagerProduct = () => {
   const {
     data: products,
     isLoading,
@@ -38,11 +37,11 @@ const ProductAdmin = () => {
         setUser(userData);
       } else {
         // Redirect to login if no session
-        navigate("/admin/sign-in");
+        navigate("/manager/sign-in");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      navigate("/admin/sign-in");
+      navigate("/manager/sign-in");
     }
   };
 
@@ -64,44 +63,10 @@ const ProductAdmin = () => {
     );
   if (isError) return <div>Error: {error.message}</div>;
 
-  const handleDelete = async (productId) => {
-    setLoadingDeleteId(productId);
-    deleteProduct(productId, {
-      onSuccess: () => {
-        setLocalProducts(
-          localProducts.filter((product) => product.$id !== productId)
-        );
-        setLoadingDeleteId(null);
-      },
-      onError: () => {
-        setLoadingDeleteId(null);
-      },
-    });
-  };
-
-  const handleAddProduct = () => {
-    setLoadingAdd(true);
-    setTimeout(() => {
-      setLoadingAdd(false);
-      window.location.href = "/admin/product/tambah";
-    }, 1000);
-  };
-
   return (
     <div className="p-4">
       <h2 className="text-4xl font-bold my-10">Product</h2>
-      <div className="flex justify-center md:justify-end mb-4">
-        {loadingAdd ? (
-          <Loader />
-        ) : (
-          <button
-            onClick={handleAddProduct}
-            className="bg-blue-500 text-white px-3 py-2 rounded-md"
-          >
-            Tambahkan Product
-          </button>
-        )}
-      </div>
+
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 hidden md:table">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -142,25 +107,11 @@ const ProductAdmin = () => {
                 <td className="px-6 py-4">{list.status}</td>
                 <td className="px-6 py-4 flex flex-col md:flex-row">
                   <Link
-                    to={`/admin/product/${list.$id}/edit`}
+                    to={`/manager/product/${list.$id}/edit`}
                     className="bg-blue-500 text-white px-3 py-2 rounded-md mr-3 mb-2 md:mb-0"
                   >
                     Edit
                   </Link>
-                  <div className="relative">
-                    {loadingDeleteId === list.$id ? (
-                      <div className="flex justify-center items-center h-full">
-                        <Loader />
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => handleDelete(list.$id)}
-                        className="bg-red-500 text-white px-3 py-2 rounded-md"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
                 </td>
               </tr>
             ))}
@@ -179,25 +130,11 @@ const ProductAdmin = () => {
               <p className="text-gray-700 mb-4">{rupiah(list.price)}</p>
               <div className="flex flex-col">
                 <Link
-                  to={`/admin/product/${list.$id}/edit`}
+                  to={`/manager/product/${list.$id}/edit`}
                   className="bg-blue-500 text-center text-white px-3 py-2 rounded-md mb-2"
                 >
                   Edit
                 </Link>
-                <div className="relative">
-                  {loadingDeleteId === list.$id ? (
-                    <div className="flex justify-center items-center h-full">
-                      <Loader />
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleDelete(list.$id)}
-                      className="bg-red-500 w-full text-white px-3 py-2 rounded-md"
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
               </div>
             </div>
           ))}
@@ -207,4 +144,4 @@ const ProductAdmin = () => {
   );
 };
 
-export default ProductAdmin;
+export default ManagerProduct;

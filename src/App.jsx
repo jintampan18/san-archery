@@ -7,6 +7,11 @@ import ProductAdmin from "./components/admin/ProductAdmin";
 import TambahProduct from "./components/admin/TambahProduct";
 import EditProduct from "./components/admin/EditProduct";
 import SignIn from "./components/admin/sign-in";
+import ManagerSignIn from "./components/manager/ManagerSignIn";
+import ManagerLayout from "./views/ManagerLayout";
+import ManagerDashboard from "./components/manager/ManagerDashBoard";
+import ManagerProduct from "./components/manager/ManagerProduct";
+import ManagerEditProduct from "./components/manager/ManagerEditProduct";
 
 function App() {
   return (
@@ -15,16 +20,26 @@ function App() {
         {/* public */}
         <Route path="/" element={<LandingPage />} />
 
-        <Route path="sign-in" element={<SignIn />} />
+        {/* Admin */}
+        <Route path="/admin/sign-in" element={<SignIn />} />
 
         {/** private */}
-
         <Route path="/admin" element={<AdminLayOut />}>
           <Route path="dashboard" element={<DashBoard />} />
           <Route path="product" element={<ProductAdmin />} />
           <Route path="product/tambah" element={<TambahProduct />} />
           <Route path="product/:id/edit" element={<EditProduct />} />
           <Route path="dashboard/order/:id" element={<OrderById />} />
+        </Route>
+
+        {/* Manager */}
+        <Route path="/manager/sign-in" element={<ManagerSignIn />} />
+
+        {/** private */}
+        <Route path="/manager" element={<ManagerLayout />}>
+          <Route path="dashboard" element={<ManagerDashboard />} />
+          <Route path="product" element={<ManagerProduct />} />
+          <Route path="product/:id/edit" element={<ManagerEditProduct />} />
         </Route>
       </Routes>
     </main>

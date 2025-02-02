@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "./queryKeys";
-import { createComment, createProduct, deleteProduct, findUser, getAllComments, getAllCustomer, getAllPackage, getAllProducts, getAllProductsAdmin, getOrderByCustomerId, getProductById, updateOrder, updateProduct, updateCustomer } from "./api";
+import { createComment, createProduct, deleteProduct, findUser, getAllComments, getAllCustomer, getAllPackage, getAllProducts, getAllProductsAdmin, getOrderByCustomerId, getProductById, updateOrder, updateProduct, updateProductStatus, updateCustomer } from "./api";
 
 export const useGetAllPackage = () => {
     return useQuery({
@@ -71,6 +71,16 @@ export const useUpdateProduct = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (product) => updateProduct(product),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries([QUERY_KEYS.GET_PRODUCT_BY_ID, data.$id]);
+        }
+    });
+};
+
+export const useUpdateProductStatus = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (product) => updateProductStatus(product),
         onSuccess: (data) => {
             queryClient.invalidateQueries([QUERY_KEYS.GET_PRODUCT_BY_ID, data.$id]);
         }
