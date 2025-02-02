@@ -6,6 +6,7 @@ export const QUERY_KEYS = Object.freeze({
     GET_ALL_ORDERS: 'getOrder',
     GET_ALL_CUSTOMER: 'getCustomer',
     GET_ORDER_BY_ID: 'getOrderById',
+    GET_CUSTOMER_BY_ID: 'getCustomerById',
     GET_PRODUCT_BY_ID: 'getProductById',
     GET_USER_BY_EMAIL: 'getUserByEmail'
 })

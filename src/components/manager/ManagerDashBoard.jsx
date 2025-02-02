@@ -11,6 +11,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
+import rupiah from "@/utils/rupiahFormater";
 
 const Loading = () => <div className="text-center">Loading...</div>;
 
@@ -25,13 +26,17 @@ const CustomerRow = ({ customer }) => (
       {customer.name}
     </th>
     <td className="px-6 py-4">{dateFormater(customer.tanggalTransaksi)}</td>
+    <td className="px-6 py-4">{customer.noResi}</td>
     <td className="px-6 py-4">{customer.email}</td>
     <td className="px-6 py-4">{customer.phoneNumber}</td>
     <td className="px-6 py-4">{customer.address}</td>
     <td className="px-6 py-4">{customer.shippingOption}</td>
+    <td className="px-6 py-4">{rupiah(customer.shippingCost)}</td>
+    <td className="px-6 py-4">{rupiah(customer.totalAmount)}</td>
+
     <td className="px-6 py-4">
       <Link
-        to={`/admin/dashboard/order/${customer.$id}`}
+        to={`/manager/dashboard/order/${customer.$id}`}
         className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
       >
         View
@@ -49,6 +54,9 @@ const CustomerCard = ({ customer }) => (
       <strong>Transaction Time:</strong> {customer.tanggalTransaksi}
     </p>
     <p className="text-gray-700 dark:text-gray-400 mb-2">
+      <strong>No Resi:</strong> {customer.noResi}
+    </p>
+    <p className="text-gray-700 dark:text-gray-400 mb-2">
       <strong>Email:</strong> {customer.email}
     </p>
     <p className="text-gray-700 dark:text-gray-400 mb-2">
@@ -60,12 +68,52 @@ const CustomerCard = ({ customer }) => (
     <p className="text-gray-700 dark:text-gray-400 mb-2">
       <strong>Shipping Options:</strong> {customer.shippingOption}
     </p>
+    <p className="text-gray-700 dark:text-gray-400 mb-2">
+      <strong>Shipping Costs:</strong> {customer.shippingCost}
+    </p>
+    <p className="text-gray-700 dark:text-gray-400 mb-2">
+      <strong>Total Amount:</strong> {customer.totalAmount}
+    </p>
     <Link
-      to={`/admin/dashboard/order/${customer.$id}`}
+      to={`/manager/dashboard/order/${customer.$id}`}
       className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
     >
       View
     </Link>
+  </div>
+);
+
+const TotalSummaryCard = ({ totalTransactionCustomers, totalAmount }) => (
+  <div className="flex justify-end">
+    <div className="bg-blue-300 dark:bg-gray-800 p-6 rounded-lg shadow-md mb-4">
+      <div className="flex justify-end">
+        <div className="flex flex-col gap-3 justify-between items-center text-center mx-32">
+          <div className="bg-blue-100 text-blue-800 text-5xl font-bold px-4 py-2 rounded-full">
+            🧑‍🤝‍🧑
+          </div>
+          <div>
+            <p className="text-gray-700 dark:text-gray-400">Total Customers</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {totalTransactionCustomers}
+            </p>
+          </div>
+        </div>
+
+        <div className="inline-block w-0.5 self-stretch bg-neutral-100 dark:bg-white/10"></div>
+
+        <div className="flex flex-col gap-3 justify-between items-center text-center mx-32">
+          <div className="bg-green-100 text-green-800 text-5xl font-bold px-4 py-2 rounded-full">
+            💰
+          </div>
+          <div>
+            <p className="text-gray-700 dark:text-gray-400">Total Amount</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {rupiah(totalAmount)}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 );
 
@@ -170,10 +218,12 @@ const ManagerDashboard = () => {
     const columns = [
       { title: "Name", dataKey: "name" },
       { title: "Transaction Time", dataKey: "tanggalTransaksi" },
+      { title: "No Resi", dataKey: "noResi" },
       { title: "Email", dataKey: "email" },
       { title: "Phone Number", dataKey: "phoneNumber" },
       { title: "Address", dataKey: "address" },
       { title: "Shipping Options", dataKey: "shippingOption" },
+      { title: "Shipping Cost", dataKey: "shippingCost" },
       { title: "Total Amount", dataKey: "totalAmount" },
     ];
 
@@ -189,11 +239,13 @@ const ManagerDashboard = () => {
     const rows = filteredDataForPDF.map((customer) => ({
       name: customer.name,
       tanggalTransaksi: dateFormater(customer.tanggalTransaksi),
+      noResi: customer.noResi,
       email: customer.email,
       phoneNumber: customer.phoneNumber,
       address: customer.address,
       shippingOption: customer.shippingOption,
-      totalAmount: customer.totalAmount, // Assuming totalAmount is available in customer data
+      shippingCost: customer.shippingCost,
+      totalAmount: customer.totalAmount,
     }));
 
     doc.autoTable({
@@ -205,7 +257,6 @@ const ManagerDashboard = () => {
 
     doc.save("customers_report.pdf");
   };
-
   // Guard clause - if no user is logged in, show nothing
   if (!user) {
     return null;
@@ -218,6 +269,13 @@ const ManagerDashboard = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  // Calculate total customers and total amount
+  const totalTransactionCustomers = filteredData.length;
+  const totalAmount = filteredData.reduce(
+    (acc, customer) => acc + (customer.totalAmount || 0),
+    0
+  );
 
   return (
     <div className="w-full p-4">
@@ -274,6 +332,11 @@ const ManagerDashboard = () => {
         </button>
       </div>
 
+      <TotalSummaryCard
+        totalTransactionCustomers={totalTransactionCustomers}
+        totalAmount={totalAmount}
+      />
+
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg hidden md:block">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -283,6 +346,9 @@ const ManagerDashboard = () => {
               </th>
               <th scope="col" className="px-6 py-3">
                 Transaction Time
+              </th>
+              <th scope="col" className="px-6 py-3">
+                No Resi
               </th>
               <th scope="col" className="px-6 py-3">
                 Email
@@ -295,6 +361,12 @@ const ManagerDashboard = () => {
               </th>
               <th scope="col" className="px-6 py-3">
                 Shipping Options
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Shipping Cost
+              </th>
+              <th scope="col" className="px-6 py-3">
+                Total Amount
               </th>
               <th scope="col" className="px-6 py-3">
                 Action

@@ -12,6 +12,7 @@ import ManagerLayout from "./views/ManagerLayout";
 import ManagerDashboard from "./components/manager/ManagerDashBoard";
 import ManagerProduct from "./components/manager/ManagerProduct";
 import ManagerEditProduct from "./components/manager/ManagerEditProduct";
+import ManagerOrderById from "./components/manager/ManagerOrderById";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
         {/** private */}
         <Route path="/manager" element={<ManagerLayout />}>
           <Route path="dashboard" element={<ManagerDashboard />} />
+          <Route path="dashboard/order/:id" element={<ManagerOrderById />} />
           <Route path="product" element={<ManagerProduct />} />
           <Route path="product/:id/edit" element={<ManagerEditProduct />} />
         </Route>

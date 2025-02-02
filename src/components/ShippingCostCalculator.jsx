@@ -67,6 +67,19 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
     setAddresses(event.target.value);
   };
 
+  const servicesToExclude = ["JTR", "TRC"];
+
+  const filterOutServices = (costs, servicesToExclude) => {
+    return costs.map((item) => ({
+      ...item,
+      costs: item.costs.filter(
+        (service) => !servicesToExclude.includes(service.service)
+      ),
+    }));
+  };
+
+  const filteredCosts = filterOutServices(costs, servicesToExclude);
+
   // Calculate shipping cost
   const calculateCost = async () => {
     if (!selectedProvince || !selectedCity || !selectedCourier) {
@@ -199,7 +212,7 @@ const ShippingCostCalculator = ({ onCostCalculated, totalWeight }) => {
           <h3 className="text-2xl font-bold text-gray-800">
             Biaya Pengiriman:
           </h3>
-          {costs.flatMap((item) =>
+          {filteredCosts.flatMap((item) =>
             item.costs.map((service) => (
               <div key={service.service} className="flex items-center">
                 <input

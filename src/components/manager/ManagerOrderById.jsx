@@ -72,7 +72,7 @@ const OrderCard = ({ order, onUpdateStatus }) => {
   );
 };
 
-const OrderById = () => {
+const ManagerOrderById = () => {
   const { id } = useParams();
   const { data: orders, isLoading, isError, error } = useGetOrderById(id);
   const { mutate: updateOrder } = useUpdateOrder();
@@ -95,11 +95,11 @@ const OrderById = () => {
         setUser(userData);
       } else {
         // Redirect to login if no session
-        navigate("/admin/sign-in");
+        navigate("/manager/sign-in");
       }
     } catch (error) {
       console.error("Authentication error:", error);
-      navigate("/admin/sign-in");
+      navigate("/manager/sign-in");
     }
   };
 
@@ -166,4 +166,4 @@ const OrderById = () => {
   );
 };
 
-export default OrderById;
+export default ManagerOrderById;

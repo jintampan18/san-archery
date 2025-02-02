@@ -165,6 +165,30 @@ export async function deleteFile(fileId) {
     await storage.deleteFile(appwriteConfig.storageId, fileId);
 }
 
+export async function updateCustomerNoResi(customer) {    
+    try {
+        const updatedData = {
+            noResi: customer.noResi, 
+        };
+        console.log("Updated Data", updatedData);
+        
+        const updatedCustomerNoResi = await databases.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.customerCollectionId,
+            customer.id,
+            {
+                noResi: customer.noResi 
+            }
+        );
+        console.log("Success update no resi", updatedCustomerNoResi);
+        
+        return updatedCustomerNoResi; // Return the updated product data
+    } catch (error) {
+        console.error("Error updating no resi product:", error);
+        throw error; // Rethrow the error for further handling
+    }
+}
+
 export async function createProduct(product) {
     try {
         const uploadedFile = await uploadFile(product.file[0]);
@@ -246,13 +270,9 @@ export async function updateProduct(product) {
 }
 
 export async function updateProductStatus(product) {
-
-    console.log("Product", product);
-    
     try {
-        // Prepare the data to update
         const updatedData = {
-            status: product.status, // Assuming product.status is the new status
+            status: product.status,
         };
 
         console.log("Updated Data", updatedData);
@@ -266,7 +286,7 @@ export async function updateProductStatus(product) {
             }
         );
 
-        return updatedProductStatus; // Return the updated product data
+        return updatedProductStatus; 
     } catch (error) {
         console.error("Error updating status product:", error);
         throw error; // Rethrow the error for further handling

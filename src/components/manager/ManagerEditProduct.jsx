@@ -29,22 +29,6 @@ const ManagerEditProduct = () => {
     );
   }
 
-  // Handle form submission
-  //   const handleSubmit = async (status) => {
-  //     try {
-  //       const product = await updateProductStatus({ id, status });
-  //       console.log("Product:", product); // Log hasil create
-
-  //       if (!product) {
-  //         toast({ title: "Please try again" });
-  //       } else {
-  //         navigate("/manager/product");
-  //       }
-  //     } catch (err) {
-  //       console.error("Error updating product status:", err);
-  //       alert("Failed to update product status.");
-  //     }
-  //   };
   const handleUpdateStatus = async (status) => {
     // Call your update function here
     await updateProductStatus({ id, status });
